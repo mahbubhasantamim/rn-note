@@ -51,11 +51,11 @@ export default function MyScreenWrapperLayout({
     );
   }
   return (
-    <SafeAreaView className={`bg-gray-950 flex-1`}>
+    <SafeAreaView className={`bg-gray-900 flex-1`}>
       {scrollView ? (
         <ScrollView
           contentContainerClassName={TailwindUtil.cn(
-            `bg-gray-900 ${Platform.OS === "web" ? "w-[420px] mx-auto" : ""} `,
+            `${Platform.OS === "web" ? "w-[420px] mx-auto" : ""} `,
             className
           )}
         >
@@ -64,7 +64,7 @@ export default function MyScreenWrapperLayout({
       ) : (
         <View
           className={TailwindUtil.cn(
-            `flex-1 bg-gray-950 ${
+            `flex-1 bg-gray-900 ${
               Platform.OS === "web" ? "w-[420px] mx-auto" : ""
             }`,
             className

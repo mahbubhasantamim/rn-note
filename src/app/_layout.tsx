@@ -1,14 +1,20 @@
-import React from "react";
-
-import MyStatusBar from "@/components/common/my-status-bar";
-import { Slot } from "expo-router";
+import { TailwindColor } from "@/config/color.config";
+import { Stack } from "expo-router";
 import "../global.css";
 
-export default function MainLayout() {
+export default function TabLayout() {
   return (
     <>
-      <MyStatusBar />
-      <Slot />
+      <Stack>
+        <Stack.Screen
+          name="(tabs)"
+          options={{
+            headerShown: false,
+            statusBarStyle: "light",
+            statusBarColor: TailwindColor.gray[900],
+          }}
+        />
+      </Stack>
     </>
   );
 }
