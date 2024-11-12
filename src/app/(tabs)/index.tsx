@@ -3,8 +3,9 @@ import MyScreenWrapperLayout from "@/components/layout/my-screen-wrapper.layout"
 import { TailwindColor } from "@/config/color.config";
 import { useNotesStore } from "@/hooks/notes.store";
 import { UniqueId } from "@/utils/common-util";
+import Feather from "@expo/vector-icons/Feather";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import {
   actions,
@@ -14,11 +15,14 @@ import {
 
 export default function App() {
   const richText = useRef<RichEditor>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+
   const notes = useNotesStore((s) => s.data);
   const setNotes = useNotesStore((s) => s.setData);
   const activeNoteId = useNotesStore((s) => s.activeNote);
   const setActiveNoteId = useNotesStore((s) => s.setActiveNote);
   const addNewNote = useNotesStore((s) => s.addItem);
+  const [moreAction, setMoreAction] = useState(false);
 
   const activeNote = notes.find((item) => item.isPinned === true);
 
@@ -59,13 +63,20 @@ export default function App() {
       <View className="flex-1 rounded-2xl">
         {notes.length > 0 ? (
           <>
-            <ScrollView>
+            <ScrollView ref={scrollViewRef}>
               <RichEditor
+                useContainer={true}
+                onCursorPosition={(y) =>
+                  scrollViewRef.current?.scrollTo({
+                    y: y - 100,
+                    animated: true,
+                  })
+                }
+                initialFocus={true}
                 ref={richText}
                 onChange={richTextHandle}
                 initialContentHTML={activeNote?.desc}
                 placeholder="Hi you can write whatever you want..."
-                // androidHardwareAccelerationDisabled={true}
                 initialHeight={600}
                 editorStyle={{
                   backgroundColor: "transparent",
@@ -74,7 +85,7 @@ export default function App() {
                 style={{
                   borderTopLeftRadius: 16,
                   borderTopRightRadius: 16,
-                  paddingHorizontal: 10,
+                  // paddingHorizontal: 10,
                   paddingTop: 6,
                   paddingBottom: 8,
                 }}
@@ -83,21 +94,34 @@ export default function App() {
             <View className="mb-5 mx-6">
               <RichToolbar
                 editor={richText}
-                selectedIconTint={TailwindColor["noteAccent"]}
-                iconTint={TailwindColor.gray[400]}
+                selectedIconTint={"white"}
+                iconTint={"white"}
+                iconSize={14}
+                unselectedButtonStyle={{
+                  backgroundColor: TailwindColor.gray[600],
+                  borderRadius: 50,
+                  marginHorizontal: 5,
+                  height: 34,
+                  width: 34,
+                }}
+                selectedButtonStyle={{
+                  backgroundColor: TailwindColor.noteAccent,
+                  borderRadius: 50,
+                  marginHorizontal: 5,
+                  height: 34,
+                  width: 34,
+                }}
                 actions={[
-                  // actions.insertImage,
-                  actions.heading1,
+                  actions.heading2,
                   actions.setBold,
                   actions.setItalic,
+                  actions.setUnderline,
                   actions.insertBulletsList,
                   actions.insertOrderedList,
-                  actions.insertLink,
-                  actions.setStrikethrough,
-                  actions.setUnderline,
+                  "moreAction",
                 ]}
                 iconMap={{
-                  [actions.heading1]: ({
+                  [actions.heading2]: ({
                     tintColor,
                   }: {
                     tintColor: string;
@@ -106,18 +130,87 @@ export default function App() {
                       style={{
                         color: tintColor,
                         fontWeight: "bold",
-                        fontSize: 18,
+                        fontSize: 12,
                       }}
                     >
                       H1
                     </Text>
                   ),
+                  moreAction: () => (
+                    <View
+                      className={`bg-gray-900 w-full h-full rounded-full items-center justify-center ${
+                        moreAction ? "bg-noteAccent" : ""
+                      }`}
+                    >
+                      <Feather name="more-vertical" size={18} color="white" />
+                    </View>
+                  ),
                 }}
+                moreAction={() => setMoreAction((prev) => !prev)}
                 style={{
+                  height: 50,
                   backgroundColor: TailwindColor.gray[800],
                   borderRadius: 50,
+                  paddingHorizontal: 8,
+                  paddingVertical: 8,
                 }}
               />
+              <MySpacer />
+              {moreAction && (
+                <RichToolbar
+                  editor={richText}
+                  selectedIconTint={"white"}
+                  iconTint={"white"}
+                  iconSize={14}
+                  unselectedButtonStyle={{
+                    backgroundColor: TailwindColor.gray[600],
+                    borderRadius: 50,
+                    marginHorizontal: 5,
+                    height: 34,
+                    width: 34,
+                  }}
+                  selectedButtonStyle={{
+                    backgroundColor: TailwindColor.noteAccent,
+                    borderRadius: 50,
+                    marginHorizontal: 5,
+                    height: 34,
+                    width: 34,
+                  }}
+                  actions={[
+                    actions.blockquote,
+                    actions.insertImage,
+                    actions.insertLink,
+                    actions.setStrikethrough,
+                    actions.checkboxList,
+                    actions.undo,
+                    actions.redo,
+                  ]}
+                  iconMap={{
+                    [actions.heading2]: ({
+                      tintColor,
+                    }: {
+                      tintColor: string;
+                    }) => (
+                      <Text
+                        style={{
+                          color: tintColor,
+                          fontWeight: "bold",
+                          fontSize: 12,
+                        }}
+                      >
+                        H1
+                      </Text>
+                    ),
+                  }}
+                  style={{
+                    height: 50,
+                    backgroundColor: TailwindColor.gray[800],
+                    borderRadius: 50,
+                    paddingHorizontal: 8,
+                    paddingVertical: 8,
+                  }}
+                />
+              )}
             </View>
           </>
         ) : (

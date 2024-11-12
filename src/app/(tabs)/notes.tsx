@@ -20,12 +20,10 @@ export default function Notes() {
 
   const renderNote = ({ item }: { item: INotes }) => {
     const replaceWhiteSpace = item.desc
-      .replace(/<[^>]+>/g, "") // Remove HTML tags
-      .replace(/&nbsp;/g, " ") // Replace &nbsp; with space
-      .replace(/[•\*\-\+]/g, " ") // Replace bullet points and list markers
-      .replace(/\n/g, " \n") // Add space after line breaks
-      .replace(/([.])([^\s])/g, "$1 $2") // Add space after periods
+      .replace(/<[^>]+>/g, " ") // Replace all HTML tags with a space
+      .replace(/\s+/g, " ") // Replace multiple spaces/newlines with a single space
       .trim();
+
     // const replaceHTML = item.desc.replace(/<(.|\n)*?>/g, "").trim();
     // const replaceWhiteSpace = replaceHTML.replace(/&nbsp;/g, "").trim();
 
