@@ -30,5 +30,6 @@
   "error": "#FB431A",
   "info": "#3575DD",
   "pending": "#FF942E",
-  "transparent": "transparent"
+  "transparent": "transparent",
+  "noteAccent": "#519E7F"
 }

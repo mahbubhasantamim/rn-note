@@ -1,76 +1,60 @@
+import MySpacer from "@/components/common/my-spacer";
 import MyScreenWrapperLayout from "@/components/layout/my-screen-wrapper.layout";
-import { KeyConstant } from "@/constants/key.constant";
-import { AsyncStorageUtil } from "@/utils/async-storage.util";
+import { TailwindColor } from "@/config/color.config";
+import { INotes, useNotesStore } from "@/hooks/notes.store";
 import { UniqueId } from "@/utils/common-util";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useEffect, useRef, useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 
-interface INotes {
-  id: string;
-  desc: string;
-  isPinned: boolean;
-}
-
-const initialNote = {
-  id: UniqueId.createUuid(),
-  desc: "Hi you can write whatever you want...",
-  isPinned: false,
-};
-
-// const notes: INotes[] = [
-//   {
-//     desc: "Hi you can write whatever you want",
-//     isPinned: true,
-//   },
-//   {
-//     desc: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Soluta repellat minima cumque adipisci qui ea quo recusandae perspiciatis odio nobis, laboriosam esse fugit quaerat in exercitationem accusantium iure fugiat nihil?",
-//     isPinned: false,
-//   },
-// ];
-
 export default function Notes() {
-  const [notes, setNotes] = useState<INotes[]>([]);
+  const notes = useNotesStore((s) => s.data);
+  const setNotes = useNotesStore((s) => s.setData);
+  const addNewNote = useNotesStore((s) => s.addItem);
 
-  const richTextRef = useRef();
-  useEffect(() => {
-    const getLocalData = async () => {
-      const notesLocalData = (await AsyncStorageUtil.getData(
-        KeyConstant.NOTES
-      )) as INotes[];
-
-      if (notesLocalData?.length < 1) {
-        await AsyncStorageUtil.setData(KeyConstant.NOTES, []);
-      }
-      setNotes(notesLocalData);
-    };
-
-    getLocalData();
-  }, []);
-  const id = UniqueId.createUuid();
-  console.log(id);
+  const initialNote: INotes = {
+    id: UniqueId.createUuid(),
+    desc: "Hi you can write whatever you want...",
+    isPinned: true,
+  };
 
   const renderNote = ({ item }: { item: INotes }) => {
-    console.log(item);
+    const replaceWhiteSpace = item.desc
+      .replace(/<[^>]+>/g, "") // Remove HTML tags
+      .replace(/&nbsp;/g, " ") // Replace &nbsp; with space
+      .replace(/[•\*\-\+]/g, " ") // Replace bullet points and list markers
+      .replace(/\n/g, " \n") // Add space after line breaks
+      .replace(/([.])([^\s])/g, "$1 $2") // Add space after periods
+      .trim();
+    // const replaceHTML = item.desc.replace(/<(.|\n)*?>/g, "").trim();
+    // const replaceWhiteSpace = replaceHTML.replace(/&nbsp;/g, "").trim();
 
     return (
       <TouchableOpacity
-      // onLongPress={() => {
-      //   notes.find
-      //   setNotes((old) => )
-      // }}
+        onLongPress={async () => {
+          const updatedNote = notes.map(
+            (it) =>
+              it.id === item.id
+                ? { ...it, isPinned: true } // Set the clicked item as pinned
+                : { ...it, isPinned: false } // Set all others as not pinned
+          );
+          setNotes(updatedNote);
+        }}
       >
         <View className="flex flex-row justify-between items-center my-2 bg-gray-800 rounded-md py-3 px-4">
-          <Text className="text-primary-50 text-lg lin">
-            {item.desc.length > 55 ? item.desc.slice(0, 55) + "..." : item.desc}
+          <Text className="text-primary-50 text-lg w-11/12">
+            {replaceWhiteSpace.length > 55
+              ? replaceWhiteSpace.slice(0, 55) + "..."
+              : replaceWhiteSpace}
           </Text>
           {item.isPinned && (
-            <Ionicons
-              name="checkmark-done-circle-sharp"
-              size={24}
-              color="white"
-            />
+            <View className="w-1/12">
+              <Ionicons
+                name="checkmark-done-circle-sharp"
+                size={24}
+                color={TailwindColor.noteAccent}
+              />
+            </View>
           )}
         </View>
       </TouchableOpacity>
@@ -84,7 +68,7 @@ export default function Notes() {
           horizontal={false}
           data={notes}
           renderItem={renderNote}
-          // keyExtractor={item => item._id}
+          keyExtractor={(item) => item.id}
           ListEmptyComponent={
             <View className="flex-1 items-center justify-center">
               <Text className="text-primary-50 py-2 px-4 rounded-full">
@@ -95,33 +79,42 @@ export default function Notes() {
           showsHorizontalScrollIndicator={false}
           className="py-3"
         />
+
+        {notes.length < 1 && (
+          <View className="h-full items-center justify-center">
+            <TouchableOpacity
+              className="bg-noteAccent p-4 rounded-full"
+              onPress={async () => {
+                addNewNote(initialNote);
+              }}
+            >
+              <MaterialCommunityIcons
+                name="clipboard-plus-outline"
+                size={24}
+                color="white"
+              />
+            </TouchableOpacity>
+            <MySpacer />
+            <Text className="text-gray-200">Click to add your firs note.</Text>
+          </View>
+        )}
       </View>
 
-      <TouchableOpacity
-        className="bg-white absolute bottom-6 right-6 p-4 rounded-full"
-        onPress={async () => {
-          const notesLocalData = (await AsyncStorageUtil.getData(
-            KeyConstant.NOTES
-          )) as INotes[];
-
-          if (notesLocalData?.length > 0) {
-            const newNotes = [...notesLocalData, initialNote];
-            await AsyncStorageUtil.setData(KeyConstant.NOTES, newNotes);
-            setNotes((prev) => [...prev, initialNote]);
-          } else {
-            const newNotes = [initialNote];
-            await AsyncStorageUtil.setData(KeyConstant.NOTES, newNotes);
-            setNotes(newNotes);
-          }
-          // AsyncStorageUtil.removeData(KeyConstant.NOTES);
-        }}
-      >
-        <MaterialCommunityIcons
-          name="clipboard-plus-outline"
-          size={24}
-          color="black"
-        />
-      </TouchableOpacity>
+      {notes.length > 0 && (
+        <TouchableOpacity
+          className="bg-noteAccent absolute bottom-6 right-6 p-4 rounded-full"
+          onPress={async () => {
+            addNewNote(initialNote);
+            // AsyncStorageUtil.removeData(KeyConstant.NOTES);
+          }}
+        >
+          <MaterialCommunityIcons
+            name="clipboard-plus-outline"
+            size={24}
+            color="white"
+          />
+        </TouchableOpacity>
+      )}
     </MyScreenWrapperLayout>
   );
 }

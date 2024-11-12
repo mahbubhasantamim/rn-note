@@ -6,8 +6,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "white",
-        tabBarInactiveTintColor: TailwindColor.gray[400],
+        tabBarActiveTintColor: TailwindColor["noteAccent"],
+        tabBarInactiveTintColor: TailwindColor["noteAccent"],
         tabBarStyle: {
           backgroundColor: TailwindColor.gray[800],
           height: 75,
