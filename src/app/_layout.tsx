@@ -1,23 +1,43 @@
-import { Slot } from "expo-router";
 import { StatusBar } from "react-native";
 import "../global.css";
 
-export default function TabLayout() {
+import { Slot } from "expo-router";
+
+export default function Layout() {
   return (
-    <>
-      <StatusBar barStyle={"light-content"} />
-      <Slot />
-    </>
-    // <Stack>
+    // <Stack
+    //   screenOptions={{
+    //     // statusBarTranslucent: true,
+    //     // statusBarStyle: "dark",
+    //     headerStyle: {
+    //       backgroundColor: TailwindColor.gray[900],
+    //     },
+    //     headerTitleStyle: {
+    //       color: "white",
+    //     },
+    //     headerTintColor: "white",
+    //   }}
+    // >
     //   <Stack.Screen
     //     name="(tabs)"
     //     options={{
     //       headerShown: false,
-    //       statusBarStyle: "light",
-    //       statusBarColor: TailwindColor.gray[900],
-    //       animation: "none",
+    //     }}
+    //   />
+    //   <Stack.Screen
+    //     name="edit-note/[noteId]"
+    //     options={{
+    //       headerShown: false,
+    //       headerTitle: "",
+    //       headerStyle: {
+    //         backgroundColor: TailwindColor.gray[900],
+    //       },
     //     }}
     //   />
     // </Stack>
+    <>
+      <StatusBar barStyle={"light-content"} />
+      <Slot />
+    </>
   );
 }

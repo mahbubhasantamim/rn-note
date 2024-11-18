@@ -57,15 +57,10 @@ export const useNotesStore = createWithEqualityFn<INotesStore>(
 
     // Add a single item and update AsyncStorage
     addItem: async (item) => {
-      const updatedData = [
-        ...get().data.map(
-          (it) => ({ ...it, isPinned: false }) // Set all others as not pinned
-        ),
-        item,
-      ];
+      const updatedData = [...get().data, item];
       try {
         await AsyncStorageUtil.setData(KeyConstant.NOTES, updatedData);
-        set({ data: updatedData, activeNote: item.id });
+        set({ data: updatedData });
       } catch (error) {
         console.error("Error saving data to AsyncStorage", error);
       }

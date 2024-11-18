@@ -8,6 +8,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Keyboard,
   KeyboardAvoidingView,
   ScrollView,
   Text,
@@ -24,13 +25,6 @@ export default function App() {
   const richText = useRef<RichEditor>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // const notes = useNotesStore((s) => s.data);
-  // const setNotes = useNotesStore((s) => s.setData);
-  // const activeNoteId = useNotesStore((s) => s.activeNote);
-  // const setActiveNoteId = useNotesStore((s) => s.setActiveNote);
-  // const addNewNote = useNotesStore((s) => s.addItem);
-  // const initializeData = useNotesStore((state) => state.initializeData);
-
   const {
     data: notes,
     setData: setNotes,
@@ -40,8 +34,8 @@ export default function App() {
     initializeData,
   } = useNotesStore();
   const [loading, setLoading] = useState(true);
-
   const [moreAction, setMoreAction] = useState(false);
+  const [isKeyboardOpen, setKeyboardOpen] = useState(false);
 
   const activeNote = notes.find((item) => item.isPinned === true);
 
@@ -58,29 +52,34 @@ export default function App() {
     }
   }, [activeNoteId]);
 
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setKeyboardOpen(true);
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardOpen(false);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
   const richTextHandle = (descriptionText: string) => {
     if (descriptionText) {
-      if (!activeNoteId) {
-        // if notes not pinned --> create a new note
-        addNewNote({
-          id: UniqueId.createUuid(),
-          desc: descriptionText,
-          isPinned: true,
-        });
-      } else {
-        // if notes is pinned --> update note
-        const updatedNote = notes.map((item) =>
-          item.isPinned === true ? { ...item, desc: descriptionText } : item
-        );
-        setNotes(updatedNote);
-      }
-    } else {
-      // if description is empty --> remove note
-      if (notes.length > 1) {
-        const updatedNote = notes.filter((item) => item.id !== activeNoteId);
-        setNotes(updatedNote);
-        setActiveNoteId("");
-      }
+      // if notes is pinned --> update note
+      const updatedNote = notes.map((item) =>
+        item.isPinned === true ? { ...item, desc: descriptionText } : item
+      );
+      setNotes(updatedNote);
     }
   };
 
@@ -131,72 +130,9 @@ export default function App() {
                 />
               </KeyboardAvoidingView>
             </ScrollView>
-            <View className="mb-5 mx-6">
-              <RichToolbar
-                editor={richText}
-                selectedIconTint={"white"}
-                iconTint={"white"}
-                iconSize={14}
-                unselectedButtonStyle={{
-                  backgroundColor: TailwindColor.gray[600],
-                  borderRadius: 50,
-                  marginHorizontal: 4,
-                  height: 34,
-                  width: 34,
-                }}
-                selectedButtonStyle={{
-                  backgroundColor: TailwindColor.noteAccent,
-                  borderRadius: 50,
-                  marginHorizontal: 4,
-                  height: 34,
-                  width: 34,
-                }}
-                actions={[
-                  actions.heading2,
-                  actions.setBold,
-                  actions.setItalic,
-                  actions.setUnderline,
-                  actions.insertBulletsList,
-                  actions.insertOrderedList,
-                  "moreAction",
-                ]}
-                iconMap={{
-                  [actions.heading2]: ({
-                    tintColor,
-                  }: {
-                    tintColor: string;
-                  }) => (
-                    <Text
-                      style={{
-                        color: tintColor,
-                        fontWeight: "bold",
-                        fontSize: 12,
-                      }}
-                    >
-                      H1
-                    </Text>
-                  ),
-                  moreAction: () => (
-                    <View
-                      className={`bg-gray-900 w-full h-full rounded-full items-center justify-center ${
-                        moreAction ? "bg-noteAccent" : ""
-                      }`}
-                    >
-                      <Feather name="more-vertical" size={18} color="white" />
-                    </View>
-                  ),
-                }}
-                moreAction={() => setMoreAction((prev) => !prev)}
-                style={{
-                  height: 50,
-                  backgroundColor: TailwindColor.gray[800],
-                  borderRadius: 50,
-                  paddingHorizontal: 8,
-                  paddingVertical: 8,
-                }}
-              />
-              <MySpacer />
-              {moreAction && (
+
+            {isKeyboardOpen && (
+              <View className="mx-6">
                 <RichToolbar
                   editor={richText}
                   selectedIconTint={"white"}
@@ -205,25 +141,25 @@ export default function App() {
                   unselectedButtonStyle={{
                     backgroundColor: TailwindColor.gray[600],
                     borderRadius: 50,
-                    marginHorizontal: 5,
+                    marginHorizontal: 4,
                     height: 34,
                     width: 34,
                   }}
                   selectedButtonStyle={{
                     backgroundColor: TailwindColor.noteAccent,
                     borderRadius: 50,
-                    marginHorizontal: 5,
+                    marginHorizontal: 4,
                     height: 34,
                     width: 34,
                   }}
                   actions={[
-                    actions.blockquote,
-                    actions.insertImage,
-                    actions.insertLink,
-                    actions.setStrikethrough,
-                    actions.checkboxList,
-                    actions.undo,
-                    actions.redo,
+                    actions.heading2,
+                    actions.setBold,
+                    actions.setItalic,
+                    actions.setUnderline,
+                    actions.insertBulletsList,
+                    actions.insertOrderedList,
+                    "moreAction",
                   ]}
                   iconMap={{
                     [actions.heading2]: ({
@@ -241,7 +177,17 @@ export default function App() {
                         H1
                       </Text>
                     ),
+                    moreAction: () => (
+                      <View
+                        className={`bg-gray-900 w-full h-full rounded-full items-center justify-center ${
+                          moreAction ? "bg-noteAccent" : ""
+                        }`}
+                      >
+                        <Feather name="more-vertical" size={18} color="white" />
+                      </View>
+                    ),
                   }}
+                  moreAction={() => setMoreAction((prev) => !prev)}
                   style={{
                     height: 50,
                     backgroundColor: TailwindColor.gray[800],
@@ -250,8 +196,64 @@ export default function App() {
                     paddingVertical: 8,
                   }}
                 />
-              )}
-            </View>
+                <MySpacer />
+                {moreAction && (
+                  <RichToolbar
+                    editor={richText}
+                    selectedIconTint={"white"}
+                    iconTint={"white"}
+                    iconSize={14}
+                    unselectedButtonStyle={{
+                      backgroundColor: TailwindColor.gray[600],
+                      borderRadius: 50,
+                      marginHorizontal: 4,
+                      height: 34,
+                      width: 34,
+                    }}
+                    selectedButtonStyle={{
+                      backgroundColor: TailwindColor.noteAccent,
+                      borderRadius: 50,
+                      marginHorizontal: 5,
+                      height: 34,
+                      width: 34,
+                    }}
+                    actions={[
+                      actions.blockquote,
+                      // actions.insertImage,
+                      actions.insertLink,
+                      actions.setStrikethrough,
+                      actions.checkboxList,
+                      actions.undo,
+                      actions.redo,
+                    ]}
+                    iconMap={{
+                      [actions.heading2]: ({
+                        tintColor,
+                      }: {
+                        tintColor: string;
+                      }) => (
+                        <Text
+                          style={{
+                            color: tintColor,
+                            fontWeight: "bold",
+                            fontSize: 12,
+                          }}
+                        >
+                          H1
+                        </Text>
+                      ),
+                    }}
+                    style={{
+                      height: 50,
+                      backgroundColor: TailwindColor.gray[800],
+                      borderRadius: 50,
+                      paddingHorizontal: 8,
+                      paddingVertical: 8,
+                    }}
+                  />
+                )}
+              </View>
+            )}
           </>
         ) : (
           <View className="flex-1 items-center justify-center">
