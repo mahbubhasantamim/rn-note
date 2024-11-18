@@ -1,27 +1,23 @@
-import { TailwindColor } from "@/config/color.config";
-import { useNotesStore } from "@/hooks/notes.store";
-import { Stack } from "expo-router";
-import { useEffect } from "react";
+import { Slot } from "expo-router";
+import { StatusBar } from "react-native";
 import "../global.css";
 
 export default function TabLayout() {
-  const notes = useNotesStore((state) => state.initializeData);
-  useEffect(() => {
-    notes();
-  }, []);
-
   return (
     <>
-      <Stack>
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerShown: false,
-            statusBarStyle: "light",
-            statusBarColor: TailwindColor.gray[900],
-          }}
-        />
-      </Stack>
+      <StatusBar barStyle={"light-content"} />
+      <Slot />
     </>
+    // <Stack>
+    //   <Stack.Screen
+    //     name="(tabs)"
+    //     options={{
+    //       headerShown: false,
+    //       statusBarStyle: "light",
+    //       statusBarColor: TailwindColor.gray[900],
+    //       animation: "none",
+    //     }}
+    //   />
+    // </Stack>
   );
 }

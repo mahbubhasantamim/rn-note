@@ -93,7 +93,8 @@ export default function Notes() {
               />
             </TouchableOpacity>
             <MySpacer />
-            <Text className="text-gray-200">Click to add your firs note.</Text>
+            <Text className="text-gray-200">Click to add your first note.</Text>
+            <MySpacer className="h-20" />
           </View>
         )}
       </View>

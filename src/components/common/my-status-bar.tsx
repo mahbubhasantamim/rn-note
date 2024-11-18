@@ -5,8 +5,9 @@ import React from "react";
 export default function MyStatusBar() {
   return (
     <StatusBar
-      translucent
-      backgroundColor={TailwindColor.gray[950]}
+      // translucent
+      // backgroundColor={TailwindColor.gray[900]}
+      backgroundColor={TailwindColor.gray[900]}
       style="light"
     />
   );

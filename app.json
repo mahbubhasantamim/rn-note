@@ -26,14 +26,22 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0",
+            "enableProguardInReleaseBuilds": true
+          }
+        }
+      ]
     ],
     "extra": {
-      "router": {
-        "origin": false
-      },
       "eas": {
-        "projectId": "99e00c2f-5b1c-4ac9-91d2-de8ef504543d"
+        "projectId": "84ae7db6-d564-4c4a-9871-fbe6dc70beb1"
       }
     }
   }

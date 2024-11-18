@@ -27,15 +27,11 @@ export const useNotesStore = createWithEqualityFn<INotesStore>(
     // Initialize data by loading from AsyncStorage
     initializeData: async () => {
       try {
-        const storedData = (await AsyncStorageUtil.getData(
-          KeyConstant.NOTES
-        )) as INotes[];
+        const storedData =
+          ((await AsyncStorageUtil.getData(KeyConstant.NOTES)) as INotes[]) ||
+          [];
 
-        if (!storedData) {
-          // If no data is found, save an empty array to AsyncStorage
-          await AsyncStorageUtil.setData(KeyConstant.NOTES, []);
-          set({ data: [] });
-        } else {
+        if (storedData?.length > 0) {
           set({
             data: storedData,
             activeNote: storedData.find((item) => item.isPinned === true)?.id,

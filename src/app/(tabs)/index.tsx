@@ -6,7 +6,14 @@ import { UniqueId } from "@/utils/common-util";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useEffect, useRef, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   actions,
   RichEditor,
@@ -17,14 +24,33 @@ export default function App() {
   const richText = useRef<RichEditor>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const notes = useNotesStore((s) => s.data);
-  const setNotes = useNotesStore((s) => s.setData);
-  const activeNoteId = useNotesStore((s) => s.activeNote);
-  const setActiveNoteId = useNotesStore((s) => s.setActiveNote);
-  const addNewNote = useNotesStore((s) => s.addItem);
+  // const notes = useNotesStore((s) => s.data);
+  // const setNotes = useNotesStore((s) => s.setData);
+  // const activeNoteId = useNotesStore((s) => s.activeNote);
+  // const setActiveNoteId = useNotesStore((s) => s.setActiveNote);
+  // const addNewNote = useNotesStore((s) => s.addItem);
+  // const initializeData = useNotesStore((state) => state.initializeData);
+
+  const {
+    data: notes,
+    setData: setNotes,
+    activeNote: activeNoteId,
+    setActiveNote: setActiveNoteId,
+    addItem: addNewNote,
+    initializeData,
+  } = useNotesStore();
+  const [loading, setLoading] = useState(true);
+
   const [moreAction, setMoreAction] = useState(false);
 
   const activeNote = notes.find((item) => item.isPinned === true);
+
+  useEffect(() => {
+    initializeData();
+    setTimeout(() => {
+      setLoading(false);
+    }, 200);
+  }, []);
 
   useEffect(() => {
     if (richText.current && activeNoteId && activeNote) {
@@ -64,32 +90,46 @@ export default function App() {
         {notes.length > 0 ? (
           <>
             <ScrollView ref={scrollViewRef}>
-              <RichEditor
-                useContainer={true}
-                onCursorPosition={(y) =>
-                  scrollViewRef.current?.scrollTo({
-                    y: y - 100,
-                    animated: true,
-                  })
-                }
-                initialFocus={true}
-                ref={richText}
-                onChange={richTextHandle}
-                initialContentHTML={activeNote?.desc}
-                placeholder="Hi you can write whatever you want..."
-                initialHeight={600}
-                editorStyle={{
-                  backgroundColor: "transparent",
-                  color: "white",
-                }}
-                style={{
-                  borderTopLeftRadius: 16,
-                  borderTopRightRadius: 16,
-                  // paddingHorizontal: 10,
-                  paddingTop: 6,
-                  paddingBottom: 8,
-                }}
-              />
+              <KeyboardAvoidingView>
+                <RichEditor
+                  ref={richText}
+                  useContainer={true}
+                  onCursorPosition={(y) =>
+                    scrollViewRef.current?.scrollTo({
+                      y: y - 100,
+                      animated: true,
+                    })
+                  }
+                  // initialFocus={true}
+                  onTouchEnd={(e) =>
+                    scrollViewRef.current?.scrollTo({
+                      y: e.nativeEvent.locationY - 10,
+                      animated: true,
+                    })
+                  }
+                  onFocus={() =>
+                    scrollViewRef.current?.scrollTo({
+                      y: 100,
+                      animated: true,
+                    })
+                  }
+                  onChange={richTextHandle}
+                  initialContentHTML={activeNote?.desc}
+                  placeholder="Hi you can write whatever you want..."
+                  initialHeight={600}
+                  editorStyle={{
+                    backgroundColor: "transparent",
+                    color: "white",
+                  }}
+                  style={{
+                    borderTopLeftRadius: 16,
+                    borderTopRightRadius: 16,
+                    // paddingHorizontal: 10,
+                    paddingTop: 6,
+                    paddingBottom: 8,
+                  }}
+                />
+              </KeyboardAvoidingView>
             </ScrollView>
             <View className="mb-5 mx-6">
               <RichToolbar
@@ -100,14 +140,14 @@ export default function App() {
                 unselectedButtonStyle={{
                   backgroundColor: TailwindColor.gray[600],
                   borderRadius: 50,
-                  marginHorizontal: 5,
+                  marginHorizontal: 4,
                   height: 34,
                   width: 34,
                 }}
                 selectedButtonStyle={{
                   backgroundColor: TailwindColor.noteAccent,
                   borderRadius: 50,
-                  marginHorizontal: 5,
+                  marginHorizontal: 4,
                   height: 34,
                   width: 34,
                 }}
@@ -215,25 +255,33 @@ export default function App() {
           </>
         ) : (
           <View className="flex-1 items-center justify-center">
-            <TouchableOpacity
-              className="bg-noteAccent p-4 rounded-full"
-              onPress={async () => {
-                addNewNote({
-                  id: UniqueId.createUuid(),
-                  desc: "Hi you can write whatever you want...",
-                  isPinned: true,
-                });
-                // AsyncStorageUtil.removeData(KeyConstant.NOTES);
-              }}
-            >
-              <MaterialCommunityIcons
-                name="clipboard-plus-outline"
-                size={24}
-                color="white"
-              />
-            </TouchableOpacity>
-            <MySpacer />
-            <Text className="text-gray-200">Click to add your firs note.</Text>
+            {loading ? (
+              <ActivityIndicator />
+            ) : (
+              <>
+                <TouchableOpacity
+                  className="bg-noteAccent p-4 rounded-full"
+                  onPress={async () => {
+                    addNewNote({
+                      id: UniqueId.createUuid(),
+                      desc: "Hi you can write whatever you want...",
+                      isPinned: true,
+                    });
+                    // AsyncStorageUtil.removeData(KeyConstant.NOTES);
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="clipboard-plus-outline"
+                    size={24}
+                    color="white"
+                  />
+                </TouchableOpacity>
+                <MySpacer />
+                <Text className="text-gray-200">
+                  Click to add your first note.
+                </Text>
+              </>
+            )}
           </View>
         )}
       </View>
